@@ -18,9 +18,9 @@ import {
   Check,
   Download,
 } from "lucide-react"
-import EventModal from "../components/EventModal"
 import MembersModal from "../components/MembersModal"
-import EventDetailsModal from "../components/EventDetailsModal"
+import EventDetailsModal from "../shared/EventDetailsModal"
+import EventModal from  "../shared/EventModal"
 
 const CalendarView = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 16)) // Use a single date state for all views
