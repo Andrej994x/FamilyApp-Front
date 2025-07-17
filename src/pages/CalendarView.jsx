@@ -264,6 +264,7 @@ const CalendarView = () => {
 
     // Add next month days to fill the grid (always 6 rows, 42 cells)
     const remainingDays = 42 - days.length
+    console.log("test")
     for (let day = 1; day <= remainingDays; day++) {
       days.push({ day, isCurrentMonth: false, isPrevMonth: false })
     }
