@@ -1,23 +1,47 @@
 "use client"
-import { X, MoreHorizontal, Folder, User, CheckSquare, FileText, ShoppingCart } from "lucide-react"
+import { X, MoreHorizontal, Folder, User, CheckSquare, FileText, ShoppingCart, Heart } from "lucide-react"
 import { useState } from "react"
 
-const TaskDetailsModal = ({ isOpen, onClose, item, onToggleComplete, selectedList }) => {
+const TaskDetailsModal = ({ isOpen, onClose, item, onToggleComplete, selectedList, onUpdateItemComments }) => {
   const [commentText, setCommentText] = useState("")
-  const [isCommentExpanded, setIsCommentExpanded] = useState(false)
+  const [showCommentActions, setShowCommentActions] = useState(false) // New state for showing buttons
   const [isShaking, setIsShaking] = useState(false)
+  // Initialize comments from item prop, or an empty array if not present
+  // This state will be used for rendering, but updates will be passed to parent
+  const [currentComments, setCurrentComments] = useState(item?.comments || [])
 
   if (!isOpen || !item) return null
 
-  const handleCommentFocus = () => setIsCommentExpanded(true)
-  const handlePostComment = () => {
-    console.log("Posting comment:", commentText)
-    setCommentText("")
-    setIsCommentExpanded(false)
+  const handleCommentFocus = () => setShowCommentActions(true)
+  const handleCommentBlur = () => {
+    // Hide actions only if commentText is empty
+    if (commentText.trim() === "") {
+      setShowCommentActions(false)
+    }
   }
+
+  const handlePostComment = () => {
+    if (commentText.trim()) {
+      const now = new Date()
+      const newComment = {
+        id: `comment-${Date.now()}`,
+        author: "Andrej", // Hardcoded for now, can be dynamic
+        initials: "An", // Hardcoded for now
+        text: commentText.trim(),
+        timestamp: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), // e.g., "16:13"
+        date: now.toLocaleDateString("en-US", { weekday: "long" }), // e.g., "Monday"
+      }
+      const updatedComments = [...currentComments, newComment]
+      setCurrentComments(updatedComments) // Update local state for immediate display
+      setCommentText("") // Clear the input text
+      setShowCommentActions(false) // Hide the buttons
+      onUpdateItemComments(item.id, updatedComments) // Pass updated comments to parent
+    }
+  }
+
   const handleCancelComment = () => {
     setCommentText("")
-    setIsCommentExpanded(false)
+    setShowCommentActions(false)
   }
 
   const handleCheckboxClick = () => {
@@ -28,10 +52,14 @@ const TaskDetailsModal = ({ isOpen, onClose, item, onToggleComplete, selectedLis
 
   const getListIcon = (iconType) => {
     switch (iconType) {
-      case "document": return <FileText size={24} className="text-blue-600" />
-      case "checklist": return <CheckSquare size={24} className="text-blue-600" />
-      case "shopping": return <ShoppingCart size={24} className="text-blue-600" />
-      default: return <FileText size={24} className="text-blue-600" />
+      case "document":
+        return <FileText size={24} className="text-blue-600" />
+      case "checklist":
+        return <CheckSquare size={24} className="text-blue-600" />
+      case "shopping":
+        return <ShoppingCart size={24} className="text-blue-600" />
+      default:
+        return <FileText size={24} className="text-blue-600" />
     }
   }
 
@@ -56,13 +84,10 @@ const TaskDetailsModal = ({ isOpen, onClose, item, onToggleComplete, selectedLis
             <MoreHorizontal size={24} />
           </button>
         </div>
-
-        {/* Full-width border */}
+        {/* Full-width border (header separator) */}
         <div className="w-full h-[1px] bg-gray-200"></div>
-
-        {/* Content */}
-        <div className="p-6 pt-6 pb-4">
-
+        {/* Content above the new line */}
+        <div className="px-6 pt-6 pb-4">
           {/* Task title */}
           <div className="flex items-center mb-8">
             <div
@@ -71,11 +96,12 @@ const TaskDetailsModal = ({ isOpen, onClose, item, onToggleComplete, selectedLis
             >
               {item.completed && <div className="w-3.5 h-3.5 rounded-full bg-gray-900" />}
             </div>
-            <span className={`font-medium text-base ${item.completed ? "line-through text-gray-500" : "text-gray-900"}`}>
+            <span
+              className={`font-medium text-base ${item.completed ? "line-through text-gray-500" : "text-gray-900"}`}
+            >
               {item.text}
             </span>
           </div>
-
           {/* List info */}
           <div className="flex items-center mb-8">
             {getListIcon(selectedList?.icon)}
@@ -84,34 +110,75 @@ const TaskDetailsModal = ({ isOpen, onClose, item, onToggleComplete, selectedLis
               <span className="text-white text-xs font-bold">✓</span>
             </div>
           </div>
-
           {/* Attachment icon */}
           <div className="flex items-center mb-8">
             <Folder size={24} className="text-blue-600 mr-4" />
           </div>
-
           {/* Completed info */}
-          <div className="flex items-center mb-10">
+          <div className="flex items-center pb-4">
+            {" "}
+            {/* Додаден padding-bottom за простор пред линијата */}
             <User size={24} className="text-blue-600 mr-4" />
             <span className="text-gray-900 font-medium text-base">Completed by Andrej</span>
             <span className="text-gray-500 text-sm ml-1">- 12:55</span>
           </div>
-
-          {/* Comment section */}
-          {isCommentExpanded ? (
-            <div className="flex items-start">
-              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                <span className="text-white text-sm font-medium">An</span>
-              </div>
-              <div className="flex-1">
-                <textarea
-                  placeholder="Write a comment"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none text-gray-700 font-normal text-base resize-none"
-                  rows={3}
-                  autoFocus
-                />
+        </div>
+        {/* Full-width border between completed info and comments */}
+        <div className="w-full h-[1px] bg-gray-200"></div>
+        {/* Content below the new line (comments section) */}
+        <div className="px-6 pt-4 pb-4">
+          {" "}
+          {/* Додаден padding-top за простор по линијата */}
+          {/* Existing Comments Section */}
+          {currentComments.length > 0 && (
+            <div className="mb-6 space-y-4">
+              {currentComments.map((comment) => (
+                <div key={comment.id} className="flex items-start">
+                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <span className="text-white text-sm font-medium">{comment.initials}</span>
+                  </div>
+                  <div className="flex-1 bg-white px-3 pt-0 pb-3 rounded-lg relative">
+                    {" "}
+                    {/* Changed pt-1 to pt-0 */}
+                    <div className="flex items-baseline">
+                      {" "}
+                      {/* This div holds author and timestamp */}
+                      <p className="text-gray-900 font-medium text-sm mr-1">{comment.author}:</p>
+                      <span className="text-gray-500 text-xs">
+                        {comment.date} {comment.timestamp}
+                      </span>
+                    </div>
+                    <p className="text-gray-700 text-base">{comment.text}</p> {/* Comment text on new line */}
+                    <div className="absolute top-3 right-3 flex items-center space-x-2">
+                      <button className="text-gray-400 hover:text-red-500">
+                        <Heart size={16} />
+                      </button>
+                      <button className="text-gray-400 hover:text-gray-600">
+                        <MoreHorizontal size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Comment input section */}
+          <div className="flex items-start">
+            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+              <span className="text-white text-sm font-medium">An</span>
+            </div>
+            <div className="flex-1">
+              <textarea
+                placeholder="Write a comment"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onFocus={handleCommentFocus}
+                onBlur={handleCommentBlur}
+                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none text-gray-700 font-normal text-base resize-none"
+                rows={showCommentActions || commentText.length > 0 ? 3 : 1} // Expand rows when focused or has text
+                name="commentContent"
+              />
+              {(showCommentActions || commentText.length > 0) && (
                 <div className="flex flex-col space-y-3 mt-4">
                   <button
                     onClick={handlePostComment}
@@ -126,27 +193,10 @@ const TaskDetailsModal = ({ isOpen, onClose, item, onToggleComplete, selectedLis
                     Cancel
                   </button>
                 </div>
-              </div>
+              )}
             </div>
-          ) : (
-            <div className="flex items-start">
-              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                <span className="text-white text-sm font-medium">An</span>
-              </div>
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="Write a comment"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  onFocus={handleCommentFocus}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none text-gray-700 font-normal text-base h-12"
-                />
-              </div>
-            </div>
-          )}
+          </div>
         </div>
-
         {/* Shake animation */}
         <style jsx>{`
           @keyframes shake {
