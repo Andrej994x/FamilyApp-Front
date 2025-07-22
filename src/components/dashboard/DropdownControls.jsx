@@ -1,7 +1,16 @@
+"use client"
+
 import { ChevronDown } from "lucide-react"
 import { useState } from "react"
 
-const DropdownControls = ({ selectedView, selectedSort, setSelectedView, setSelectedSort, viewOptions, sortOptions }) => {
+const DropdownControls = ({
+  selectedView,
+  selectedSort,
+  setSelectedView,
+  setSelectedSort,
+  viewOptions,
+  sortOptions,
+}) => {
   const [isViewDropdownOpen, setIsViewDropdownOpen] = useState(false)
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false)
 
@@ -14,12 +23,13 @@ const DropdownControls = ({ selectedView, selectedSort, setSelectedView, setSele
             setIsViewDropdownOpen(!isViewDropdownOpen)
             setIsSortDropdownOpen(false)
           }}
-          className="dropdown-btn"
+          className="flex items-center cursor-pointer px-4 py-2 rounded-full border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
         >
-          {selectedView} <ChevronDown size={16} className={`transition-transform ${isViewDropdownOpen ? "rotate-180" : ""}`} />
+          {selectedView}{" "}
+          <ChevronDown size={16} className={`ml-2 transition-transform ${isViewDropdownOpen ? "rotate-180" : ""}`} />
         </button>
         {isViewDropdownOpen && (
-          <div className="dropdown-menu">
+          <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
             {viewOptions.map((option) => (
               <button
                 key={option}
@@ -27,7 +37,7 @@ const DropdownControls = ({ selectedView, selectedSort, setSelectedView, setSele
                   setSelectedView(option)
                   setIsViewDropdownOpen(false)
                 }}
-                className={`dropdown-item ${selectedView === option ? "bg-blue-50 text-blue-600" : ""}`}
+                className={`w-full text-left cursor-pointer  px-4 py-2 text-sm font-medium hover:bg-gray-100 ${selectedView === option ? "bg-blue-50 text-blue-600" : "text-gray-700"}`}
               >
                 {option}
               </button>
@@ -35,7 +45,6 @@ const DropdownControls = ({ selectedView, selectedSort, setSelectedView, setSele
           </div>
         )}
       </div>
-
       {/* Sort Dropdown */}
       <div className="relative">
         <button
@@ -43,12 +52,13 @@ const DropdownControls = ({ selectedView, selectedSort, setSelectedView, setSele
             setIsSortDropdownOpen(!isSortDropdownOpen)
             setIsViewDropdownOpen(false)
           }}
-          className="dropdown-btn"
+          className="flex items-center cursor-pointer px-4 py-2 rounded-full border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
         >
-          {selectedSort} <ChevronDown size={16} className={`transition-transform ${isSortDropdownOpen ? "rotate-180" : ""}`} />
+          {selectedSort}{" "}
+          <ChevronDown size={16} className={`ml-2 transition-transform ${isSortDropdownOpen ? "rotate-180" : ""}`} />
         </button>
         {isSortDropdownOpen && (
-          <div className="dropdown-menu right-0">
+          <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
             {sortOptions.map((option) => (
               <button
                 key={option}
@@ -56,7 +66,7 @@ const DropdownControls = ({ selectedView, selectedSort, setSelectedView, setSele
                   setSelectedSort(option)
                   setIsSortDropdownOpen(false)
                 }}
-                className={`dropdown-item ${selectedSort === option ? "bg-blue-50 text-blue-600" : ""}`}
+                className={`w-full cursor-pointer  text-left px-4 py-2 text-sm font-medium hover:bg-gray-100 ${selectedSort === option ? "bg-blue-50 text-blue-600" : "text-gray-700"}`}
               >
                 {option}
               </button>
